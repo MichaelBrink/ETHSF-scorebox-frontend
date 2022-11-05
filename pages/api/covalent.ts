@@ -24,6 +24,7 @@ export default async function handler(req: NextApiRequest, res:NextApiResponse) 
             })
 
             const covalentScore = await backend_response.json();
+
             res.send({covalentScore})
         } catch(error){
             res.send({error})

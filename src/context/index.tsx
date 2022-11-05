@@ -39,6 +39,7 @@ const initialState = {
   connection: null,
   isConnected: false,
   loading: true,
+  scoreResponse: null,
 };
 
 function contextReducer(state: any, action: any) {
@@ -68,6 +69,11 @@ function contextReducer(state: any, action: any) {
         ...state,
         loading: action.payload,
       };
+    case 'SET_SCORE_RESPONSE':
+      return {
+        ...state,
+        scoreResponse: action.payload,
+      };
 
     default:
       return state;
@@ -88,13 +94,22 @@ const ContextProvider = ({ children }: any) => {
         dispatch({ type: 'SET_IS_CONNECTED', payload: isConnected }),
       setLoading: (loading: boolean) =>
         dispatch({ type: 'SET_LOADING', payload: loading }),
+      setScoreResponse: (scoreResponse) =>
+        dispatch({ type: 'SET_SCORE_RESPONSE', payload: scoreResponse }),
     };
   }, []);
 
-  const { setWallet, setAccount, setConnection, setIsConnected, setLoading } =
-    handlers;
+  const {
+    setWallet,
+    setAccount,
+    setConnection,
+    setIsConnected,
+    setLoading,
+    setScoreResponse,
+  } = handlers;
 
-  const { wallet, account, connection, isConnected, loading } = state;
+  const { wallet, account, connection, isConnected, loading, scoreResponse } =
+    state;
 
   useEffect(() => {
     const networkId = process.env.ENV_CONFIG as string;
@@ -106,7 +121,6 @@ const ContextProvider = ({ children }: any) => {
       // Initializing wallet based account.
       const nearWallet = new WalletConnection(nearConnection, 'score-box');
       setWallet(nearWallet);
-      console.log(wallet);
     };
     initNear();
   }, []);
@@ -173,12 +187,14 @@ const ContextProvider = ({ children }: any) => {
     if (!loading) {
       storageHelper.persist('connection', connection);
       storageHelper.persist('account', account);
+      storageHelper.persist('scoreResponse', scoreResponse);
     }
-  }, [connection, account, loading]);
+  }, [connection, account, loading, scoreResponse]);
 
   useEffect(() => {
     setAccount(storageHelper.get('account'));
     setConnection(storageHelper.get('connection'));
+    setScoreResponse(storageHelper.get('scoreResponse'));
     setLoading(false);
   }, []);
 
@@ -194,6 +210,7 @@ const ContextProvider = ({ children }: any) => {
         handleMetaMask,
         handleNearSignIn,
         handleSignOut,
+        setScoreResponse,
       }}
     >
       {children}

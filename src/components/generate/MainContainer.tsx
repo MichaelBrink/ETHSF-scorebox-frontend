@@ -1,9 +1,6 @@
 import CardSelector from '@scorebox/src/components/CardSelector';
 import NavigationButtons from '@scorebox/src/components/NavigationButtons';
-import {
-  useHandleSelection,
-  useHandleSdk,
-} from '@scorebox/src/components/generate/hooks';
+import { useHandleSelection } from '@scorebox/src/components/generate/hooks';
 import { useRouter } from 'next/router';
 
 export default function MainContainer({ setStartEthereum, setStartPolygon }) {

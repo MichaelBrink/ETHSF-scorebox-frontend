@@ -37,3 +37,17 @@ export function useHandleSdk() {
 
   return [startEthereum, startPolygon, handlers] as const;
 }
+
+export function useHandleAwaitingScoreResponse() {
+  const [awaitingScoreResponse, setAwaitingScoreResponse] =
+    useState<boolean>(false);
+
+  const handlers = useMemo(() => {
+    return {
+      setToWaiting: () => setAwaitingScoreResponse(true),
+      setNotWaiting: () => setAwaitingScoreResponse(false),
+    };
+  }, []);
+
+  return [awaitingScoreResponse, handlers] as const;
+}
