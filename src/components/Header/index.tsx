@@ -4,7 +4,8 @@ import { useScoreContext } from '@scorebox/src/context';
 import truncateEthAddress from 'truncate-eth-address';
 
 export default function Header() {
-  const { handleMetaMask, isConnected, account } = useScoreContext();
+  const { handleNearSignIn, handleMetaMask, isConnected, account } =
+    useScoreContext();
   return (
     <div>
       <header
@@ -33,9 +34,10 @@ export default function Header() {
               </div>
             </Link>
           )}
+
           <Button
-            text={`${isConnected ? truncateEthAddress(account) : 'Connect'}`}
-            onClick={handleMetaMask}
+            text={`${isConnected ? 'Connected' : 'Connect'}`}
+            onClick={handleNearSignIn}
           />
         </div>
       </header>

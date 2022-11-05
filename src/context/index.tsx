@@ -5,8 +5,11 @@ import {
   useMemo,
   useEffect,
 } from 'react';
+import { connect, WalletConnection } from 'near-api-js';
 import { ethers } from 'ethers';
 import { notification } from 'antd';
+import getConfig from '@scorebox/src/utils/config';
+import { useRouter } from 'next/router';
 
 export const storageHelper = {
   persist: (key: string, item: any) =>
@@ -31,6 +34,7 @@ const useScoreContext = () => {
 };
 
 const initialState = {
+  wallet: null,
   account: null,
   connection: null,
   isConnected: false,
@@ -39,6 +43,11 @@ const initialState = {
 
 function contextReducer(state: any, action: any) {
   switch (action.type) {
+    case 'SET_WALLET':
+      return {
+        ...state,
+        wallet: action.payload,
+      };
     case 'SET_ACCOUNT':
       return {
         ...state,
@@ -70,6 +79,7 @@ const ContextProvider = ({ children }: any) => {
 
   const handlers = useMemo(() => {
     return {
+      setWallet: (wallet) => dispatch({ type: 'SET_WALLET', payload: wallet }),
       setConnection: (connection: string) =>
         dispatch({ type: 'SET_CONNECTION', payload: connection }),
       setAccount: (account: string) =>
@@ -81,10 +91,27 @@ const ContextProvider = ({ children }: any) => {
     };
   }, []);
 
-  const { setAccount, setConnection, setIsConnected, setLoading } = handlers;
+  const { setWallet, setAccount, setConnection, setIsConnected, setLoading } =
+    handlers;
 
   const { wallet, account, connection, isConnected, loading } = state;
 
+  useEffect(() => {
+    const networkId = process.env.ENV_CONFIG as string;
+
+    const initNear = async () => {
+      const config = getConfig(networkId);
+      // Initialize connection to the network (testnet/mainnet)
+      const nearConnection = await connect(config);
+      // Initializing wallet based account.
+      const nearWallet = new WalletConnection(nearConnection, 'score-box');
+      setWallet(nearWallet);
+      console.log(wallet);
+    };
+    initNear();
+  }, []);
+
+  // connecting to metamask
   const handleMetaMask = async () => {
     if (typeof window.ethereum !== 'undefined') {
       const provider: any = new ethers.providers.Web3Provider(window.ethereum);
@@ -102,9 +129,37 @@ const ContextProvider = ({ children }: any) => {
     }
   };
 
+  // connecting to NEAR Wallet
+  const handleNearSignIn = async () => {
+    wallet?.requestSignIn({ contractId: 'scorev1.scorebox.testnet' });
+  };
+
+  const router = useRouter();
+  const accountIdQuery = router.query.account_id;
+
+  // Set to connection when successfully connected to NEAR wallet
   useEffect(() => {
-    storageHelper.persist('connection', connection);
-    storageHelper.persist('account', account);
+    if (accountIdQuery) {
+      setAccount(wallet?.getAccountId());
+      setIsConnected(true);
+      setConnection('NEAR');
+      storageHelper.persist('connection', 'NEAR');
+      notification.success({ message: 'Successfully connected wallet!' });
+      router.replace('/');
+    }
+  }, [router]);
+
+  // Keeping the states on page reload
+
+  useEffect(() => {
+    connection && setIsConnected(true);
+  }, [connection]);
+
+  useEffect(() => {
+    if (!loading) {
+      storageHelper.persist('connection', connection);
+      storageHelper.persist('account', account);
+    }
   }, [connection, account, loading]);
 
   useEffect(() => {
@@ -123,11 +178,12 @@ const ContextProvider = ({ children }: any) => {
         connection,
         isConnected,
         handleMetaMask,
+        handleNearSignIn,
       }}
     >
       {children}
     </Context.Provider>
   );
-};
+};;;;;
 
 export { useScoreContext, ContextProvider };
