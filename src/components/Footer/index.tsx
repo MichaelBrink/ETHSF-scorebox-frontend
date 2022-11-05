@@ -22,7 +22,7 @@ export default function Footer() {
           <img
             src='/images/ethglobal.svg'
             alt='ethgloabal-logo'
-            className='w-20'
+            className='w-24'
           />
           <p className='text-scorebox-lightgray mt-1'>
             Hacked at ETHSanFrancisco
