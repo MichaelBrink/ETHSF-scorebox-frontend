@@ -17,6 +17,18 @@ export default function Footer() {
           &copy; {new Date().getFullYear()} ScoreBox. All Rights Reserved.
         </p>
       </div>
+      <div>
+        <a>
+          <img
+            src='/images/ethglobal.svg'
+            alt='ethgloabal-logo'
+            className='w-20'
+          />
+          <p className='text-scorebox-lightgray mt-1'>
+            Hacked at ETHSanFrancisco
+          </p>
+        </a>
+      </div>
     </footer>
   );
 }

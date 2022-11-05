@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import Button from '@scorebox/src/components/Button';
+
 import { useScoreContext } from '@scorebox/src/context';
-import truncateEthAddress from 'truncate-eth-address';
+import Connect from '@scorebox/src/components/Connect';
 
 export default function Header() {
   const { handleNearSignIn, handleMetaMask, isConnected, account } =
@@ -18,7 +18,7 @@ export default function Header() {
         <div className='flex items-center'>
           <Link href='/learn'>
             <div
-              className='mr-5 cursor-pointer hover:text-scorebox-blue'
+              className='mr-5 text-black cursor-pointer hover:text-scorebox-blue'
               style={{ fontSize: '17px' }}
             >
               Learn
@@ -27,7 +27,7 @@ export default function Header() {
           {isConnected && (
             <Link href='/start'>
               <div
-                className='mr-5 cursor-pointer hover:text-scorebox-blue'
+                className='mr-5 text-black cursor-pointer hover:text-scorebox-blue'
                 style={{ fontSize: '17px' }}
               >
                 Start
@@ -35,10 +35,7 @@ export default function Header() {
             </Link>
           )}
 
-          <Button
-            text={`${isConnected ? 'Connected' : 'Connect'}`}
-            onClick={handleNearSignIn}
-          />
+          <Connect />
         </div>
       </header>
     </div>
