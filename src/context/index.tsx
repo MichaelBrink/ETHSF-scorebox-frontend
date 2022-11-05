@@ -80,9 +80,9 @@ const ContextProvider = ({ children }: any) => {
   const handlers = useMemo(() => {
     return {
       setWallet: (wallet) => dispatch({ type: 'SET_WALLET', payload: wallet }),
-      setConnection: (connection: string) =>
+      setConnection: (connection: string | null) =>
         dispatch({ type: 'SET_CONNECTION', payload: connection }),
-      setAccount: (account: string) =>
+      setAccount: (account: string | null) =>
         dispatch({ type: 'SET_ACCOUNT', payload: account }),
       setIsConnected: (isConnected: boolean) =>
         dispatch({ type: 'SET_IS_CONNECTED', payload: isConnected }),
@@ -134,6 +134,20 @@ const ContextProvider = ({ children }: any) => {
     wallet?.requestSignIn({ contractId: 'scorev1.scorebox.testnet' });
   };
 
+  // sign the user out
+  const handleSignOut = () => {
+    {
+      connection === 'NEAR' && wallet?.signOut();
+    }
+    setAccount(null);
+    setConnection(null);
+    setIsConnected(false);
+    localStorage.clear();
+    notification.success({
+      message: 'Successfully disconnected wallet',
+    });
+  };
+
   const router = useRouter();
   const accountIdQuery = router.query.account_id;
 
@@ -179,6 +193,7 @@ const ContextProvider = ({ children }: any) => {
         isConnected,
         handleMetaMask,
         handleNearSignIn,
+        handleSignOut,
       }}
     >
       {children}
