@@ -1,5 +1,5 @@
 import Header from '@scorebox/src/components/Header';
-
+import Footer from '@scorebox/src/components/Footer';
 interface LayoutProps {
   children: React.ReactNode;
 }
@@ -11,6 +11,7 @@ export default function Layout({ children }: LayoutProps) {
       <main className='w-full horizontal_padding_wide md:pt-0 pt-10 z-10'>
         {children}
       </main>
+      <Footer />
     </div>
   );
 }

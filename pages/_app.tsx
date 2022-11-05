@@ -1,11 +1,20 @@
 import '../styles/globals.css'
-import type { AppProps } from 'next/app'
+import Head from 'next/head';
+import type { AppProps } from 'next/app';
 import Layout from '@scorebox/src/components/Layout';
+import { ContextProvider } from '@scorebox/src/context';
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <Layout>
-      <Component {...pageProps} />
-    </Layout>
+    <>
+      <Head>
+        <title>ScoreBox</title>
+      </Head>
+      <ContextProvider>
+        <Layout>
+          <Component {...pageProps} />
+        </Layout>
+      </ContextProvider>
+    </>
   );
 }
