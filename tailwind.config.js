@@ -5,7 +5,12 @@ module.exports = {
     './src/components/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        'scorebox-blue': '#364EFF',
+        'scorebox-lightgray': '#666666',
+      },
+    },
   },
   plugins: [],
 };

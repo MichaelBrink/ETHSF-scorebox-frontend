@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+.horizontal_padding_wide {
+    padding: 0 40px
+  }
+  
+  .section_padding {
+    padding: 20px 0
+  }
+  
+  
+  
