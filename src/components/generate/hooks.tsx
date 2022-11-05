@@ -20,3 +20,20 @@ export function useHandleSelection() {
 
   return [selections, handlers] as const;
 }
+
+export function useHandleSdk() {
+  const [sdk, setSdk] = useState<string | undefined>(undefined);
+
+  const handlers = useMemo(() => {
+    return {
+      setStartEthereum: () => setSdk('ethereum'),
+      setStartPolygon: () => setSdk('polygon'),
+      setSdkUndefined: () => setSdk(undefined),
+    };
+  }, []);
+
+  const startEthereum = sdk === 'ethereum';
+  const startPolygon = sdk === 'polygon';
+
+  return [startEthereum, startPolygon, handlers] as const;
+}
