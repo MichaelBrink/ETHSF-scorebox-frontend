@@ -12,7 +12,7 @@ export default function Header() {
         style={{ height: '80px' }}
       >
         <Link passHref={true} href='/' legacyBehavior>
-          <a className='mt-1 font-bold text-xl'>ScoreBox</a>
+          <a className='mt-1 font-bold text-2xl'>ScoreBox</a>
         </Link>
         <div className='flex items-center'>
           <Link href='/learn'>
@@ -23,6 +23,16 @@ export default function Header() {
               Learn
             </div>
           </Link>
+          {isConnected && (
+            <Link href='/start'>
+              <div
+                className='mr-5 cursor-pointer hover:text-scorebox-blue'
+                style={{ fontSize: '17px' }}
+              >
+                Start
+              </div>
+            </Link>
+          )}
           <Button
             text={`${isConnected ? truncateEthAddress(account) : 'Connect'}`}
             onClick={handleMetaMask}
