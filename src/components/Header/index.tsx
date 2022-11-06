@@ -13,7 +13,14 @@ export default function Header() {
         style={{ height: '80px' }}
       >
         <Link passHref={true} href='/' legacyBehavior>
-          <a className='mt-1 font-bold text-2xl'>ScoreBox</a>
+          <a className='mt-1'>
+            <img
+              src={'/images/score-box-logo.svg'}
+              width={180}
+              height={120}
+              alt='scorebox-logo'
+            />
+          </a>
         </Link>
         <div className='flex items-center'>
           <Link href='/learn'>

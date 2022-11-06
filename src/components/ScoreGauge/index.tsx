@@ -15,15 +15,15 @@ const ScoreGauge = ({ score, quality }: { score: number; quality: string }) => {
         break;
 
       case 'fair':
-        bgColor = '#99428E';
+        bgColor = '#D3AAFF';
         break;
 
       case 'good':
-        bgColor = '#8F00FF';
+        bgColor = '#7268FF';
         break;
 
       case 'very good':
-        bgColor = '#554BF9';
+        bgColor = '#3972DB';
         break;
 
       case 'excellent':
