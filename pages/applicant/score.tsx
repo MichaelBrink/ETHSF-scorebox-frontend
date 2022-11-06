@@ -11,6 +11,7 @@ export default function ScorePage() {
   const [checkoutModal, setCheckoutModal] = useState(false);
   const [showScoreDescription, setShowScoreDescription] = useState(false);
 
+
   const renderProvider = (scoreResponse) => {
     if (scoreResponse?.endpoint.includes('polygon')) {
       return 'Polygon';

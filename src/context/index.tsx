@@ -5,7 +5,7 @@ import {
   useMemo,
   useEffect,
 } from 'react';
-import { connect, WalletConnection } from 'near-api-js';
+import { connect, WalletConnection, Contract } from 'near-api-js';
 import { ethers } from 'ethers';
 import { notification } from 'antd';
 import getConfig from '@scorebox/src/utils/config';
@@ -47,6 +47,7 @@ const initialState = {
   isConnected: false,
   loading: true,
   scoreResponse: null,
+  scoreContract: null,
 };
 
 function contextReducer(state: any, action: any) {
@@ -81,6 +82,11 @@ function contextReducer(state: any, action: any) {
         ...state,
         scoreResponse: action.payload,
       };
+    case 'SET_SCORE_CONTRACT':
+      return {
+        ...state,
+        scoreContract: action.payload,
+      };
 
     default:
       return state;
@@ -103,6 +109,8 @@ const ContextProvider = ({ children }: any) => {
         dispatch({ type: 'SET_LOADING', payload: loading }),
       setScoreResponse: (scoreResponse: IScoreResponse | null) =>
         dispatch({ type: 'SET_SCORE_RESPONSE', payload: scoreResponse }),
+      setScoreContract: (contract: Contract | null) =>
+        dispatch({ type: 'SET_SCORE_CONTRACT', payload: contract }),
     };
   }, []);
 
@@ -113,10 +121,18 @@ const ContextProvider = ({ children }: any) => {
     setIsConnected,
     setLoading,
     setScoreResponse,
+    setScoreContract,
   } = handlers;
 
-  const { wallet, account, connection, isConnected, loading, scoreResponse } =
-    state;
+  const {
+    wallet,
+    account,
+    connection,
+    isConnected,
+    loading,
+    scoreResponse,
+    scoreContract,
+  } = state;
 
   useEffect(() => {
     const networkId = process.env.ENV_CONFIG as string;
@@ -128,6 +144,16 @@ const ContextProvider = ({ children }: any) => {
       // Initializing wallet based account.
       const nearWallet = new WalletConnection(nearConnection, 'score-box');
       setWallet(nearWallet);
+
+      const scoreContract = new Contract(
+        nearWallet.account(),
+        process.env.SCORE_CONTRACT_NAME as string,
+        {
+          viewMethods: ['get_scores'],
+          changeMethods: ['upload_score'],
+        }
+      );
+      setScoreContract(scoreContract);
     };
     initNear();
   }, []);
@@ -152,7 +178,9 @@ const ContextProvider = ({ children }: any) => {
 
   // connecting to NEAR Wallet
   const handleNearSignIn = async () => {
-    wallet?.requestSignIn({ contractId: 'scorev1.scorebox.testnet' });
+    wallet?.requestSignIn({
+      contractId: process.env.SCORE_CONTRACT_NAME as string,
+    });
   };
 
   // sign the user out
@@ -235,6 +263,7 @@ const ContextProvider = ({ children }: any) => {
         handleSignOut,
         scoreResponse,
         setScoreResponse,
+        scoreContract,
       }}
     >
       {children}
