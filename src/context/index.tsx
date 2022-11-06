@@ -11,6 +11,13 @@ import { notification } from 'antd';
 import getConfig from '@scorebox/src/utils/config';
 import { useRouter } from 'next/router';
 
+export type Set_Score_Response = (scoreResponse: IScoreResponse | null) => void;
+export interface IScoreResponse {
+  endpoint: string;
+  message: string;
+  score: number;
+}
+
 export const storageHelper = {
   persist: (key: string, item: any) =>
     localStorage.setItem(key, JSON.stringify(item)),
@@ -94,7 +101,7 @@ const ContextProvider = ({ children }: any) => {
         dispatch({ type: 'SET_IS_CONNECTED', payload: isConnected }),
       setLoading: (loading: boolean) =>
         dispatch({ type: 'SET_LOADING', payload: loading }),
-      setScoreResponse: (scoreResponse) =>
+      setScoreResponse: (scoreResponse: IScoreResponse | null) =>
         dispatch({ type: 'SET_SCORE_RESPONSE', payload: scoreResponse }),
     };
   }, []);
@@ -156,6 +163,7 @@ const ContextProvider = ({ children }: any) => {
     setAccount(null);
     setConnection(null);
     setIsConnected(false);
+    setScoreResponse(null);
     localStorage.clear();
     notification.success({
       message: 'Successfully disconnected wallet',
@@ -210,12 +218,13 @@ const ContextProvider = ({ children }: any) => {
         handleMetaMask,
         handleNearSignIn,
         handleSignOut,
+        scoreResponse,
         setScoreResponse,
       }}
     >
       {children}
     </Context.Provider>
   );
-};;;;;
+};
 
 export { useScoreContext, ContextProvider };

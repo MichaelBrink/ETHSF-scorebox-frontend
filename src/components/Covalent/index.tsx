@@ -16,6 +16,7 @@ const Covalent = ({
   chainId: number;
 }) => {
   const [ethAccount, setEthAccount] = useState<string | null>(null);
+
   const { setScoreResponse } = useScoreContext();
 
   useEffect(() => {

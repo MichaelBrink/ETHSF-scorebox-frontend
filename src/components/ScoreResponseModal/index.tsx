@@ -55,4 +55,4 @@ const ScoreResponseModal = ({
 };
 
 export default ScoreResponseModal;
-s;
+
