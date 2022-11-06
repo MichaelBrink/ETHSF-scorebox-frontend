@@ -191,6 +191,21 @@ const ContextProvider = ({ children }: any) => {
     connection && setIsConnected(true);
   }, [connection]);
 
+  // Redirect users to the homepage when logged out
+  useEffect(() => {
+    const returnHome = () => {
+      if (typeof window !== 'undefined') {
+        (router.pathname.includes('start') ||
+          router.pathname.includes('applicant') ||
+          router.pathname.includes('provider')) &&
+          router.push('/');
+      }
+    };
+    if (!loading) {
+      !connection && returnHome();
+    }
+  }, [router, isConnected, loading, connection]);
+
   useEffect(() => {
     if (!loading) {
       storageHelper.persist('connection', connection);

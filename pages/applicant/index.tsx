@@ -20,38 +20,49 @@ export default function ApplicantPage() {
       </div>
 
       <div className='flex justify-center'>
-        <>
-          <div className='mr-3'>
+        {connection === 'NEAR' ? (
+          <CardSelector
+            title='NEAR'
+            logo='near-logo.svg'
+            alt='near-logo'
+            width='80px'
+            onClick={() => setSelection('NEAR')}
+            selected={selection === 'NEAR'}
+          />
+        ) : (
+          <>
+            <div className='mr-3'>
+              <CardSelector
+                title='Polygon'
+                logo='polygon-logo.svg'
+                alt='polygon-logo'
+                width='80px'
+                onClick={() => setSelection('Polygon')}
+                selected={selection === 'Polygon'}
+              />
+            </div>
+            <div className='mr-3'>
+              <CardSelector
+                title='Ethereum'
+                logo='eth-diamond-rainbow.png'
+                alt='eth-logo'
+                width='50px'
+                onClick={() => setSelection('Ethereum')}
+                selected={selection === 'Ethereum'}
+                disabled
+              />
+            </div>
             <CardSelector
-              title='Polygon'
-              logo='polygon-logo.svg'
-              alt='polygon-logo'
+              title='Mina'
+              logo='mina-transparent.png'
+              alt='mina-logo'
               width='80px'
-              onClick={() => setSelection('Polygon')}
-              selected={selection === 'Polygon'}
-            />
-          </div>
-          <div className='mr-3'>
-            <CardSelector
-              title='Ethereum'
-              logo='eth-diamond-rainbow.png'
-              alt='eth-logo'
-              width='50px'
-              onClick={() => setSelection('Ethereum')}
-              selected={selection === 'Ethereum'}
+              onClick={() => setSelection('Mina')}
+              selected={selection === 'Mina'}
               disabled
             />
-          </div>
-          <CardSelector
-            title='Mina'
-            logo='mina-transparent.png'
-            alt='mina-logo'
-            width='80px'
-            onClick={() => setSelection('Mina')}
-            selected={selection === 'Mina'}
-            disabled
-          />
-        </>
+          </>
+        )}
       </div>
       <NavigationButtons
         backHandler={() => router.push(`/start`)}
