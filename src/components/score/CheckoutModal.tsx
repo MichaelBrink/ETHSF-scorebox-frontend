@@ -4,10 +4,20 @@ import { useScoreContext } from '@scorebox/src/context';
 import CloseIcon from '@scorebox/src/components/CloseIcon';
 import Button, { BUTTON_STYLES } from '@scorebox/src/components/Button';
 import { LoadingContainer } from '@scorebox/src/components/LoadingContainer';
+import { storageHelper } from '@scorebox/src/context';
 
 export default function CheckoutModal({ setCheckoutModal }) {
-  const { connection, wallet, account, scoreResponse, loading, setLoading } =
-    useScoreContext();
+  const {
+    connection,
+    wallet,
+    account,
+    scoreResponse,
+    loading,
+    setLoading,
+    scoreContract,
+    handleSetChainActivity,
+  } = useScoreContext();
+
   const [addEncryption, setAddEncryption] = useState(true);
   const [permitName, setPermitName] = useState('');
   const [success, setSuccess] = useState(false);
@@ -25,6 +35,59 @@ export default function CheckoutModal({ setCheckoutModal }) {
     } else return 'Ethereum';
   };
 
+  const handleNear = async () => {
+    try {
+      // 1. hitting the encrypt endpoint && save the score locally on our database
+      const backend_response = await fetch(
+        `${process.env.BACKEND_BASE_URL}/cryptography/encrypt`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            wallet_address: account,
+            score_response: scoreResponse,
+            blockchain: 'near',
+            is_encrypt: addEncryption ? true : false,
+            permit_name: addEncryption && permitName,
+          }),
+        }
+      );
+      setLoading(true);
+      const encryptResponse = await backend_response.json();
+
+      console.log(encryptResponse);
+      // 2. temporaily storing on the localStorage
+      storageHelper.persist('decryption-key', encryptResponse.decryption_key);
+      storageHelper.persist('permit-name', permitName);
+
+      handleSetChainActivity({
+        scoreSubmitted: true,
+        dataProvider: encryptResponse.oracle,
+        scoreAmount: encryptResponse.score_int,
+        scoreMessage: encryptResponse.score_blurb,
+        timestamp: encryptResponse.timestamp,
+        blockchain: encryptResponse.blockchain,
+        isEncrypted: addEncryption,
+      });
+
+      // @TODO: pass the right amount in yoctoNEAR
+      await scoreContract?.upload_score({
+        callbackUrl: `${process.env.NEXT_BASE_URL}/applicant/score`,
+        args: {
+          score: encryptResponse.score_int,
+          timestamp: encryptResponse.timestamp,
+          oracle: encryptResponse.oracle,
+          description: encryptResponse.score_blurb,
+          beneficiary: process.env.CONTRACT_OWNER_ID as string,
+          amount: 1000000000000,
+        },
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
   return (
     <Modal
       width={700}
@@ -109,6 +172,9 @@ export default function CheckoutModal({ setCheckoutModal }) {
                   className='border border-gray-300 rounded-sm p-1 text-xs'
                   placeholder='Permit Name'
                   maxLength={16}
+                  onChange={(e) => {
+                    setPermitName(e.target.value);
+                  }}
                 ></input>
               </div>
             </>
@@ -140,6 +206,7 @@ export default function CheckoutModal({ setCheckoutModal }) {
             <Button
               text='Confirm'
               isDisabled={addEncryption && permitName.length === 0 && true}
+              onClick={handleNear}
             />
           </div>
         </div>

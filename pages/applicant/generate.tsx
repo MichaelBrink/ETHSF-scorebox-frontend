@@ -29,7 +29,6 @@ export default function GeneratePage() {
     setSdkUndefined();
     setNotWaiting();
     setScoreResponse(null);
-
     router.replace('/applicant/generate');
   };
 

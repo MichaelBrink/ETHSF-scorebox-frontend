@@ -11,12 +11,42 @@ import { notification } from 'antd';
 import getConfig from '@scorebox/src/utils/config';
 import { useRouter } from 'next/router';
 
+export enum CHAIN_ACTIVITIES {
+  scoreSubmitted = 'scoreSubmitted',
+  dataProvider = 'dataProvider',
+  scoreAmount = 'scoreAmount',
+  scoreMessage = 'scoreMessage',
+  timestamp = 'timestamp',
+  blockchain = 'blockchain',
+  txnHash = 'txnHash',
+}
+
 export type Set_Score_Response = (scoreResponse: IScoreResponse | null) => void;
 export interface IScoreResponse {
   endpoint: string;
   message: string;
   score: number;
 }
+
+export interface IChainActivity {
+  [CHAIN_ACTIVITIES.scoreSubmitted]?: boolean;
+  [CHAIN_ACTIVITIES.dataProvider]?: 'Coinbase' | 'Covalent';
+  [CHAIN_ACTIVITIES.scoreAmount]?: number;
+  [CHAIN_ACTIVITIES.scoreMessage]?: string;
+  [CHAIN_ACTIVITIES.timestamp]?: number;
+  [CHAIN_ACTIVITIES.blockchain]?: boolean;
+  [CHAIN_ACTIVITIES.txnHash]?: string;
+}
+
+export const CHAIN_ACTIVITIES_INIT = {
+  scoreSubmitted: undefined,
+  dataProvider: undefined,
+  scoreAmount: undefined,
+  scoreMessage: undefined,
+  timestamp: undefined,
+  blockchain: undefined,
+  txnHash: undefined,
+};
 
 export const storageHelper = {
   persist: (key: string, item: any) =>
@@ -48,6 +78,7 @@ const initialState = {
   loading: true,
   scoreResponse: null,
   scoreContract: null,
+  chainActivity: CHAIN_ACTIVITIES_INIT,
 };
 
 function contextReducer(state: any, action: any) {
@@ -87,6 +118,11 @@ function contextReducer(state: any, action: any) {
         ...state,
         scoreContract: action.payload,
       };
+    case 'SET_CHAIN_ACTIVITY':
+      return {
+        ...state,
+        chainActivity: action.payload,
+      };
 
     default:
       return state;
@@ -111,6 +147,8 @@ const ContextProvider = ({ children }: any) => {
         dispatch({ type: 'SET_SCORE_RESPONSE', payload: scoreResponse }),
       setScoreContract: (contract: Contract | null) =>
         dispatch({ type: 'SET_SCORE_CONTRACT', payload: contract }),
+      setChainActivity: (chainActivity: IChainActivity) =>
+        dispatch({ type: 'SET_CHAIN_ACTIVITY', payload: chainActivity }),
     };
   }, []);
 
@@ -122,6 +160,7 @@ const ContextProvider = ({ children }: any) => {
     setLoading,
     setScoreResponse,
     setScoreContract,
+    setChainActivity,
   } = handlers;
 
   const {
@@ -132,6 +171,7 @@ const ContextProvider = ({ children }: any) => {
     loading,
     scoreResponse,
     scoreContract,
+    chainActivity,
   } = state;
 
   useEffect(() => {
@@ -239,15 +279,27 @@ const ContextProvider = ({ children }: any) => {
       storageHelper.persist('connection', connection);
       storageHelper.persist('account', account);
       storageHelper.persist('scoreResponse', scoreResponse);
+      //   storageHelper.persist('chainActivity', chainActivity);
     }
-  }, [connection, account, loading, scoreResponse]);
+  }, [connection, account, loading, scoreResponse, chainActivity]);
 
   useEffect(() => {
     setAccount(storageHelper.get('account'));
     setConnection(storageHelper.get('connection'));
     setScoreResponse(storageHelper.get('scoreResponse'));
+    // setChainActivity(storageHelper.get('chainActivity'));
     setLoading(false);
   }, []);
+
+  const handleSetChainActivity = (val: IChainActivity | null) => {
+    if (val) {
+      setChainActivity({ ...chainActivity, ...val });
+      storageHelper.persist('chainActivity', val);
+    } else {
+      setChainActivity(CHAIN_ACTIVITIES_INIT);
+      storageHelper.persist('chainActivity', CHAIN_ACTIVITIES_INIT);
+    }
+  };
 
   return (
     <Context.Provider
@@ -264,6 +316,7 @@ const ContextProvider = ({ children }: any) => {
         scoreResponse,
         setScoreResponse,
         scoreContract,
+        handleSetChainActivity,
       }}
     >
       {children}
