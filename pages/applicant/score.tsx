@@ -1,16 +1,24 @@
 import ScoreGauge from '@scorebox/src/components/ScoreGauge';
 import { useScoreContext } from '@scorebox/src/context';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Button, { BUTTON_STYLES } from '@scorebox/src/components/Button';
 import Modal from 'antd/lib/modal/Modal';
 import CheckoutModal from '@scorebox/src/components/score/CheckoutModal';
 
 export default function ScorePage() {
-  const { scoreResponse, account } = useScoreContext();
+  const { scoreResponse, account, chainActivity, setChainActivity } =
+    useScoreContext();
   const [checkoutModal, setCheckoutModal] = useState(false);
   const [showScoreDescription, setShowScoreDescription] = useState(false);
+  const router = useRouter();
 
+  useEffect(() => {
+    if (router.query.transactionHashes) setCheckoutModal(true);
+    else if (router.query.errorMessage) {
+      setChainActivity(null);
+    }
+  }, [router]);
 
   const renderProvider = (scoreResponse) => {
     if (scoreResponse?.endpoint.includes('polygon')) {
@@ -67,12 +75,19 @@ export default function ScorePage() {
               button: 'text-sm mt-3 hover:text-blue font-medium',
             }}
           />
-          <div className='mt-3'>
-            <Button
-              text='Save it to blockchain'
-              onClick={() => setCheckoutModal(true)}
-            />
-          </div>
+          {chainActivity?.scoreSubmitted ? (
+            <p className='text-lg mt-3 font-semibold'>
+              {' '}
+              Your score has already been saved to the blockchain.{' '}
+            </p>
+          ) : (
+            <div className='mt-3'>
+              <Button
+                text='Save it to blockchain'
+                onClick={() => setCheckoutModal(true)}
+              />
+            </div>
+          )}
         </div>
       </div>
       <Modal

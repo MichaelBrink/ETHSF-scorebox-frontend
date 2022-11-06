@@ -1,10 +1,13 @@
 import Modal from 'antd/lib/modal/Modal';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useScoreContext } from '@scorebox/src/context';
 import CloseIcon from '@scorebox/src/components/CloseIcon';
+import { DownloadOutlined } from '@ant-design/icons';
 import Button, { BUTTON_STYLES } from '@scorebox/src/components/Button';
 import { LoadingContainer } from '@scorebox/src/components/LoadingContainer';
 import { storageHelper } from '@scorebox/src/context';
+import getConfig from '@scorebox/src/utils/config';
+import { useRouter } from 'next/router';
 
 export default function CheckoutModal({ setCheckoutModal }) {
   const {
@@ -16,18 +19,35 @@ export default function CheckoutModal({ setCheckoutModal }) {
     setLoading,
     scoreContract,
     handleSetChainActivity,
+    chainActivity,
   } = useScoreContext();
 
   const [addEncryption, setAddEncryption] = useState(true);
   const [permitName, setPermitName] = useState('');
   const [success, setSuccess] = useState(false);
+  const [txnHash, setTxnHash] = useState(null);
   const [decryptionKey, setDecryptionKey] = useState(null);
+
+  console.log({ success });
+  console.log({ loading });
 
   const STORE_SCORE_PRICE = 1.0;
   const ENCRYPTION_PRICE = 0.5;
   const TOTAL_AMOUNT = addEncryption
     ? STORE_SCORE_PRICE + ENCRYPTION_PRICE
     : STORE_SCORE_PRICE;
+
+  const config = getConfig(process.env.ENV_CONFIG);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (router.query.transactionHashes) {
+      setSuccess(true);
+      setTxnHash(router.query.transactionHashes);
+      setDecryptionKey(storageHelper.get('decryption-key'));
+      setPermitName(storageHelper.get('permit-name'));
+    }
+  }, []);
 
   const renderProvider = (scoreResponse) => {
     if (scoreResponse?.endpoint.includes('polygon')) {
@@ -58,6 +78,7 @@ export default function CheckoutModal({ setCheckoutModal }) {
       const encryptResponse = await backend_response.json();
 
       console.log(encryptResponse);
+
       // 2. temporaily storing on the localStorage
       storageHelper.persist('decryption-key', encryptResponse.decryption_key);
       storageHelper.persist('permit-name', permitName);
@@ -88,6 +109,17 @@ export default function CheckoutModal({ setCheckoutModal }) {
       console.log(err);
     }
   };
+
+  const handleCloseModal = () => {
+    if (connection === 'NEAR') {
+      setCheckoutModal(false);
+      router.replace('/applicant/score');
+      storageHelper.persist('permit-name', null);
+      storageHelper.persist('decryption-key', null);
+    }
+    setCheckoutModal(false);
+  };
+
   return (
     <Modal
       width={700}
@@ -96,7 +128,7 @@ export default function CheckoutModal({ setCheckoutModal }) {
       centered
       closable={true}
       closeIcon={<CloseIcon />}
-      onCancel={() => setCheckoutModal(false)}
+      onCancel={() => handleCloseModal()}
       bodyStyle={{ padding: '4rem' }}
       maskClosable={false}
     >
@@ -208,6 +240,79 @@ export default function CheckoutModal({ setCheckoutModal }) {
               isDisabled={addEncryption && permitName.length === 0 && true}
               onClick={handleNear}
             />
+          </div>
+        </div>
+      )}
+      {!loading && success && (
+        <div className='flex flex-col items-center'>
+          <img src='/images/check.png' alt='check-mark' className='w-14 mb-2' />
+          <h2 className='text-2xl font-semibold tracking-tight text-center m-0'>
+            Score Saved!
+          </h2>
+          <p className='tracking-tight text-scorebox-lightgray text-center leading-4 my-4'>
+            Your score has successfully been{' '}
+            {chainActivity.isEncrypted && 'encrypted and'} saved on the
+            blockchain.<br></br>{' '}
+            {chainActivity.isEncrypted &&
+              'Please keep the information below safe.'}
+          </p>
+          {chainActivity.isEncrypted && (
+            <>
+              <div className='bg-gray-100 py-4 px-6 rounded w-full'>
+                <div className='tracking-tight font-normal text-scorebox-lightgray mb-2'>
+                  Your decryption key:
+                  <div className='text-black font-medium'>{decryptionKey}</div>
+                </div>
+
+                <div className='tracking-tight font-normal text-scorebox-lightgray mb-2'>
+                  Your permit name:
+                  <div className='text-black font-medium'>{permitName}</div>
+                </div>
+                <div className='tracking-tight font-normal text-scorebox-lightgray'>
+                  Timestamp:
+                  <div className='text-black font-medium'>
+                    {chainActivity.timestamp}
+                  </div>
+                </div>
+                <div
+                  className='text-xs font-bold underline flex items-center mt-3 cursor-pointer hover:text-scorebox-lightgray'
+                  onClick={() => {
+                    const element = document.createElement('a');
+                    const file = new Blob(
+                      [
+                        JSON.stringify({
+                          decryptionKey: decryptionKey,
+                          permit_name: permitName,
+                          timestamp: chainActivity.timestamp,
+                        }),
+                      ],
+                      {
+                        type: 'text/plain',
+                      }
+                    );
+                    element.href = URL.createObjectURL(file);
+                    element.download = 'scorebox_decryption_info.txt';
+                    document.body.appendChild(element); // Required for this to work in FireFox
+                    element.click();
+                    document.body.removeChild(element);
+                  }}
+                >
+                  <DownloadOutlined style={{ marginRight: '0.2rem' }} />
+                  Download as a .txt file
+                </div>
+              </div>
+            </>
+          )}
+
+          <div className='underline mt-3'>
+            <a
+              href={`${`${config.explorerUrl}/transactions/${txnHash}`}`}
+              target='_blank'
+              rel='noreferrer'
+            >
+              Check your transaction on{' '}
+              {connection === 'NEAR' ? 'NEAR Explorer' : 'Polygonscan'}
+            </a>
           </div>
         </div>
       )}

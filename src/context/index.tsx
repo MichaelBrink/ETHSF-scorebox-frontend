@@ -287,7 +287,7 @@ const ContextProvider = ({ children }: any) => {
     setAccount(storageHelper.get('account'));
     setConnection(storageHelper.get('connection'));
     setScoreResponse(storageHelper.get('scoreResponse'));
-    // setChainActivity(storageHelper.get('chainActivity'));
+    setChainActivity(storageHelper.get('chainActivity'));
     setLoading(false);
   }, []);
 
@@ -317,6 +317,8 @@ const ContextProvider = ({ children }: any) => {
         setScoreResponse,
         scoreContract,
         handleSetChainActivity,
+        chainActivity,
+        setChainActivity,
       }}
     >
       {children}
