@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useRouter } from 'next/router';
 import MainContainer from '@scorebox/src/components/generate/MainContainer';
 import {
