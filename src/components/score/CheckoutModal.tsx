@@ -1,5 +1,7 @@
 import Modal from 'antd/lib/modal/Modal';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { ethers } from 'ethers';
 import { useScoreContext } from '@scorebox/src/context';
 import CloseIcon from '@scorebox/src/components/CloseIcon';
 import { DownloadOutlined } from '@ant-design/icons';
@@ -7,7 +9,8 @@ import Button, { BUTTON_STYLES } from '@scorebox/src/components/Button';
 import { LoadingContainer } from '@scorebox/src/components/LoadingContainer';
 import { storageHelper } from '@scorebox/src/context';
 import getConfig from '@scorebox/src/utils/config';
-import { useRouter } from 'next/router';
+import StoreScoreAbi from '@scorebox/src/contracts/abis/StoreScore.json';
+import { notification } from 'antd';
 
 export default function CheckoutModal({ setCheckoutModal }) {
   const {
@@ -27,9 +30,6 @@ export default function CheckoutModal({ setCheckoutModal }) {
   const [success, setSuccess] = useState(false);
   const [txnHash, setTxnHash] = useState(null);
   const [decryptionKey, setDecryptionKey] = useState(null);
-
-  console.log({ success });
-  console.log({ loading });
 
   const STORE_SCORE_PRICE = 1.0;
   const ENCRYPTION_PRICE = 0.5;
@@ -107,6 +107,75 @@ export default function CheckoutModal({ setCheckoutModal }) {
       });
     } catch (err) {
       console.log(err);
+    }
+  };
+
+  const handlePolygon = async () => {
+    try {
+      // 1. hitting the encrypt endpoint && save the score locally on our database
+      const backend_response = await fetch(
+        `${process.env.BACKEND_BASE_URL}/cryptography/encrypt`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            wallet_address: account,
+            score_response: scoreResponse,
+            blockchain: connection === 'NEAR' ? 'near' : 'polygon',
+            is_encrypt: addEncryption ? true : false,
+            permit_name: addEncryption && permitName,
+          }),
+        }
+      );
+      setLoading(true);
+      const encryptResponse = await backend_response.json();
+      setDecryptionKey(encryptResponse.decryption_key);
+
+      // 2. save the score on the blockchain (upload)
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+      const signer = provider.getSigner();
+
+      const scoreContract = new ethers.Contract(
+        process.env.POLYGON_SCORE_CONTRACT_ADDRESS as string,
+        StoreScoreAbi,
+        signer
+      );
+
+      // @TODO: pass the right amount in wei
+      const uploadScoreTx = await scoreContract.uploadScore(
+        encryptResponse.score_int,
+        encryptResponse.score_blurb,
+        process.env.POLYGON_SCORE_BENEFICIARY_ADDRESS,
+        8,
+        { value: 8 }
+      );
+
+      await uploadScoreTx.wait();
+      setTxnHash(uploadScoreTx.hash);
+
+      handleSetChainActivity({
+        scoreSubmitted: true,
+        dataProvider: encryptResponse.oracle,
+        scoreAmount: encryptResponse.score_int,
+        scoreMessage: encryptResponse.score_blurb,
+        timestamp: encryptResponse.timestamp,
+        blockchain: encryptResponse.blockchain,
+        txnHash: txnHash,
+        isEncrypted: addEncryption,
+      });
+
+      setLoading(false);
+      setSuccess(true);
+    } catch (err) {
+      console.log(err);
+      setLoading(false);
+      notification.error({
+        message: 'Error saving your score on the blockchain. Plasea try again.',
+      });
     }
   };
 
@@ -238,7 +307,7 @@ export default function CheckoutModal({ setCheckoutModal }) {
             <Button
               text='Confirm'
               isDisabled={addEncryption && permitName.length === 0 && true}
-              onClick={handleNear}
+              onClick={connection === 'NEAR' ? handleNear : handlePolygon}
             />
           </div>
         </div>
@@ -314,6 +383,9 @@ export default function CheckoutModal({ setCheckoutModal }) {
               {connection === 'NEAR' ? 'NEAR Explorer' : 'Polygonscan'}
             </a>
           </div>
+          {/* <div>
+            <Button text='Allow notifications about your score' />
+          </div> */}
         </div>
       )}
     </Modal>

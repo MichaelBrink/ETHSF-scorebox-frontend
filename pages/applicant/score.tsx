@@ -76,10 +76,12 @@ export default function ScorePage() {
             }}
           />
           {chainActivity?.scoreSubmitted ? (
-            <p className='text-lg mt-3 font-semibold'>
-              {' '}
-              Your score has already been saved to the blockchain.{' '}
-            </p>
+            <>
+              <p className='text-lg mt-3 font-semibold'>
+                {' '}
+                Your score has already been saved to the blockchain.{' '}
+              </p>
+            </>
           ) : (
             <div className='mt-3'>
               <Button
