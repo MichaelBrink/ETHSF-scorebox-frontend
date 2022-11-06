@@ -134,7 +134,8 @@ const ContextProvider = ({ children }: any) => {
 
   const handlers = useMemo(() => {
     return {
-      setWallet: (wallet) => dispatch({ type: 'SET_WALLET', payload: wallet }),
+      setWallet: (wallet: WalletConnection) =>
+        dispatch({ type: 'SET_WALLET', payload: wallet }),
       setConnection: (connection: string | null) =>
         dispatch({ type: 'SET_CONNECTION', payload: connection }),
       setAccount: (account: string | null) =>
@@ -200,8 +201,10 @@ const ContextProvider = ({ children }: any) => {
 
   // connecting to metamask
   const handleMetaMask = async () => {
-    if (typeof window.ethereum !== 'undefined') {
-      const provider: any = new ethers.providers.Web3Provider(window.ethereum);
+    if (typeof (window as any).ethereum !== 'undefined') {
+      const provider: any = new ethers.providers.Web3Provider(
+        (window as any).ethereum
+      );
 
       try {
         const accounts = await provider.send('eth_requestAccounts', []);

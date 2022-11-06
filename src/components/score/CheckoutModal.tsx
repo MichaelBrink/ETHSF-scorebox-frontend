@@ -2,7 +2,7 @@ import Modal from 'antd/lib/modal/Modal';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { ethers } from 'ethers';
-import { useScoreContext } from '@scorebox/src/context';
+import { IScoreResponse, useScoreContext } from '@scorebox/src/context';
 import CloseIcon from '@scorebox/src/components/CloseIcon';
 import { DownloadOutlined } from '@ant-design/icons';
 import Button, { BUTTON_STYLES } from '@scorebox/src/components/Button';
@@ -12,7 +12,7 @@ import getConfig from '@scorebox/src/utils/config';
 import StoreScoreAbi from '@scorebox/src/contracts/abis/StoreScore.json';
 import { notification } from 'antd';
 
-export default function CheckoutModal({ setCheckoutModal }) {
+export default function CheckoutModal({ setCheckoutModal }: any) {
   const {
     connection,
     wallet,
@@ -37,7 +37,7 @@ export default function CheckoutModal({ setCheckoutModal }) {
     ? STORE_SCORE_PRICE + ENCRYPTION_PRICE
     : STORE_SCORE_PRICE;
 
-  const config = getConfig(process.env.ENV_CONFIG);
+  const config = getConfig(process.env.ENV_CONFIG as string);
   const router = useRouter();
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function CheckoutModal({ setCheckoutModal }) {
     }
   }, []);
 
-  const renderProvider = (scoreResponse) => {
+  const renderProvider = (scoreResponse: IScoreResponse) => {
     if (scoreResponse?.endpoint.includes('polygon')) {
       return 'Polygon';
     } else return 'Ethereum';
@@ -135,7 +135,9 @@ export default function CheckoutModal({ setCheckoutModal }) {
 
       // 2. save the score on the blockchain (upload)
 
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const provider = new ethers.providers.Web3Provider(
+        (window as any).ethereum
+      );
 
       const signer = provider.getSigner();
 

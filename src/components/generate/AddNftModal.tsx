@@ -9,7 +9,7 @@ const AddNftModal = ({
   setStartCovalent,
   setStartPolygon,
   polygonSelected,
-}) => {
+}: any) => {
   const { account } = useScoreContext();
 
   const getNftInfo = async () => {

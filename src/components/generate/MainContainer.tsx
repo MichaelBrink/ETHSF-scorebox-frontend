@@ -6,7 +6,10 @@ import AddNftModal from './AddNftModal';
 import { useState } from 'react';
 import { useScoreContext } from '@scorebox/src/context';
 
-export default function MainContainer({ setStartEthereum, setStartPolygon }) {
+export default function MainContainer({
+  setStartEthereum,
+  setStartPolygon,
+}: any) {
   const router = useRouter();
   const { connection } = useScoreContext();
   const [

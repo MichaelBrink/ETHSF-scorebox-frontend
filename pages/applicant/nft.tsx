@@ -3,8 +3,13 @@ import { storageHelper } from '@scorebox/src/context';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 
+export interface INftData {
+  total: number;
+  nft_count: number;
+  nft_with_value: number;
+}
 export default function NftPage() {
-  const [nftData, setNftData] = useState(null);
+  const [nftData, setNftData] = useState<INftData | null>(null);
   const router = useRouter();
 
   useEffect(() => {

@@ -27,7 +27,7 @@ const Covalent = ({
     setToWaiting();
     const provider: any = await detectEthereumProvider();
 
-    if (typeof window.ethereum !== 'undefined' && provider) {
+    if (typeof (window as any).ethereum !== 'undefined' && provider) {
       const accounts = await provider?.request({ method: 'eth_accounts' });
       const account = accounts[0];
 

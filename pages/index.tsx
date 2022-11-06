@@ -5,8 +5,8 @@ export default function Home() {
     <div className='flex flex-col '>
       <div className='text-5xl mb-10'>
         The world is built on credit.
-        <br /> Start building your credit records <br /> based on your crypto
-        history.
+        <br /> Start building your credit record <br /> based on your
+        <i> crypto</i> history.
       </div>
       <div className='flex'>
         <Button text='Get Started'></Button>
