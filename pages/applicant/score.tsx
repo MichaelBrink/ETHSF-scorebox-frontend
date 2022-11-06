@@ -4,13 +4,18 @@ import { useRouter } from 'next/router';
 import { useState } from 'react';
 import Button, { BUTTON_STYLES } from '@scorebox/src/components/Button';
 import Modal from 'antd/lib/modal/Modal';
+import CheckoutModal from '@scorebox/src/components/score/CheckoutModal';
 
 export default function ScorePage() {
   const { scoreResponse, account } = useScoreContext();
-
   const [checkoutModal, setCheckoutModal] = useState(false);
   const [showScoreDescription, setShowScoreDescription] = useState(false);
-  const router = useRouter();
+
+  const renderProvider = (scoreResponse) => {
+    if (scoreResponse?.endpoint.includes('polygon')) {
+      return 'Polygon';
+    } else return 'Ethereum';
+  };
 
   const renderQuality = (score: number) => {
     const qualityBin = [
@@ -36,12 +41,13 @@ export default function ScorePage() {
 
   return (
     <>
+      {checkoutModal && <CheckoutModal setCheckoutModal={setCheckoutModal} />}
       <div className='w-full flex flex-col justify-center text-center items-center'>
         <h2 className='text-4xl tracking-tight font-medium m-1'>
           Your Credit Score
         </h2>
         <p className='text-gray-500 font-light text-lg'>
-          Calculated with provider name
+          Calculated with {renderProvider(scoreResponse)}
         </p>
         {scoreResponse?.score && (
           <div className='flex w-full justify-center z-0'>
