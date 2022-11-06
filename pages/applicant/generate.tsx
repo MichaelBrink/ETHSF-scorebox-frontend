@@ -3,13 +3,21 @@ import MainContainer from '@scorebox/src/components/generate/MainContainer';
 import {
   useHandleSdk,
   useHandleAwaitingScoreResponse,
+  useManageExistingScore,
+  useHandleExistingScore,
 } from '@scorebox/src/components/generate/hooks';
 import Covalent from '@scorebox/src/components/Covalent';
 import { LoadingContainer } from '@scorebox/src/components/LoadingContainer';
 import ScoreResponseModal from '@scorebox/src/components/ScoreResponseModal';
 import { useScoreContext } from '@scorebox/src/context';
+import ExistingScoreModal from '@scorebox/src/components/generate/ExistingScoreModal';
 
 export default function GeneratePage() {
+  const { setScoreResponse, chainActivity, handleSetChainActivity } =
+    useScoreContext();
+  const router = useRouter();
+  const queryStatus = router.query.status;
+  const queryType = router.query.type;
   const [
     startEthereum,
     startPolygon,
@@ -19,11 +27,19 @@ export default function GeneratePage() {
   const [awaitingScoreResponse, { setToWaiting, setNotWaiting }] =
     useHandleAwaitingScoreResponse();
 
-  const { setScoreResponse } = useScoreContext();
+  const [
+    existingScoreIsLoading,
+    scoreExists,
+    { setExistingScoreToTrue, setExistingScoreToFalse },
+  ] = useHandleExistingScore();
 
-  const router = useRouter();
-  const queryStatus = router.query.status;
-  const queryType = router.query.type;
+  useManageExistingScore({
+    chainActivity,
+    setExistingScoreToTrue,
+    setExistingScoreToFalse,
+    queryType,
+    router,
+  });
 
   const startOver = () => {
     setSdkUndefined();
@@ -65,6 +81,14 @@ export default function GeneratePage() {
           queryType={queryType}
           pushToScore={() => router.push('/applicant/score')}
           startOver={startOver}
+        />
+      )}
+      {scoreExists && (
+        <ExistingScoreModal
+          scoreExists={scoreExists}
+          startOver={startOver}
+          handleSetChainActivity={handleSetChainActivity}
+          chainActivity={chainActivity}
         />
       )}
     </>

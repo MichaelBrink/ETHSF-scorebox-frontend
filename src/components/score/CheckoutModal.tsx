@@ -373,19 +373,29 @@ export default function CheckoutModal({ setCheckoutModal }) {
             </>
           )}
 
-          <div className='underline mt-3'>
+          <div className='underline my-3'>
             <a
-              href={`${`${config.explorerUrl}/transactions/${txnHash}`}`}
+              href={`${
+                connection === 'NEAR'
+                  ? `${config.explorerUrl}/transactions/${txnHash}`
+                  : `${process.env.POLYGONSCAN_URL}/tx/${txnHash}`
+              }`}
               target='_blank'
               rel='noreferrer'
             >
+              {' '}
               Check your transaction on{' '}
               {connection === 'NEAR' ? 'NEAR Explorer' : 'Polygonscan'}
             </a>
           </div>
-          {/* <div>
-            <Button text='Allow notifications about your score' />
-          </div> */}
+          <div className='flex items-center font-semibold tracking-tight border px-4 rounded-2xl cursor-pointer hover:bg-gray-100'>
+            <img
+              src='/images/push-org-logo.svg'
+              alt='push-notifications'
+              className='w-10'
+            />
+            Opt In for Push notifications
+          </div>
         </div>
       )}
     </Modal>

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 export function useHandleSelection() {
   const [selection, setSelection] = useState<string | undefined>(undefined);
@@ -50,4 +50,43 @@ export function useHandleAwaitingScoreResponse() {
   }, []);
 
   return [awaitingScoreResponse, handlers] as const;
+}
+
+export function useHandleExistingScore() {
+  const [isExistingScore, setIsExistingScore] = useState<
+    'loading' | true | false
+  >('loading');
+
+  const handlers = useMemo(() => {
+    return {
+      setExistingScoreToTrue: () => setIsExistingScore(true),
+      setExistingScoreToFalse: () => setIsExistingScore(false),
+    };
+  }, []);
+
+  const existingScoreIsLoading = isExistingScore === 'loading';
+  const scoreExists = !!isExistingScore;
+
+  return [existingScoreIsLoading, scoreExists, handlers] as const;
+}
+
+export function useManageExistingScore({
+  chainActivity,
+  setExistingScoreToTrue,
+  setExistingScoreToFalse,
+  queryType,
+  router,
+}: any) {
+  useEffect(() => {
+    if (chainActivity?.scoreSubmitted) {
+      setExistingScoreToTrue();
+      !!queryType && router.replace('/applicant/generate');
+    } else setExistingScoreToFalse();
+  }, [
+    chainActivity,
+    queryType,
+    router,
+    setExistingScoreToFalse,
+    setExistingScoreToTrue,
+  ]);
 }
