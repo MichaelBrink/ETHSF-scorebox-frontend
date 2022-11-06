@@ -2,14 +2,28 @@ import CardSelector from '@scorebox/src/components/CardSelector';
 import NavigationButtons from '@scorebox/src/components/NavigationButtons';
 import { useHandleSelection } from '@scorebox/src/components/generate/hooks';
 import { useRouter } from 'next/router';
+import AddNftModal from './AddNftModal';
+import { useState } from 'react';
+import { useScoreContext } from '@scorebox/src/context';
 
 export default function MainContainer({ setStartEthereum, setStartPolygon }) {
   const router = useRouter();
+  const { connection } = useScoreContext();
   const [
     { ethereumSelected, polygonSelected, noneSelected },
     { setToEthereum, setToPolygon },
   ] = useHandleSelection();
+  const [addNftModal, setAddNftModal] = useState(false);
+  const IS_NEAR_CONNECTED = connection === 'NEAR';
 
+  const handleContinue = () => {
+    if (IS_NEAR_CONNECTED) {
+      if (ethereumSelected) setStartEthereum();
+      else setStartPolygon();
+    } else {
+      setAddNftModal(true);
+    }
+  };
   return (
     <>
       {' '}
@@ -48,10 +62,20 @@ export default function MainContainer({ setStartEthereum, setStartPolygon }) {
         <NavigationButtons
           backHandler={() => router.push(`/applicant`)}
           nextHandler={() => {
-            ethereumSelected ? setStartEthereum() : setStartPolygon();
+            handleContinue();
           }}
           nextDisabled={noneSelected}
         />
+        {addNftModal && (
+          <AddNftModal
+            router={router}
+            addNftModal={addNftModal}
+            setAddNftModal={setAddNftModal}
+            setStartCovalent={setStartEthereum}
+            setStartPolygon={setStartPolygon}
+            polygonSelected={polygonSelected}
+          />
+        )}
       </div>
     </>
   );
